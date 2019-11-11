@@ -16,6 +16,7 @@
 
 package ru.icc.cells.ssdc.model;
 
+import ru.icc.cells.ssdc.model.style.BorderType;
 import ru.icc.cells.ssdc.model.style.CStyle;
 
 import java.util.*;
@@ -132,6 +133,9 @@ public final class CCell extends COwned implements Cloneable
     {
         return this.style;
     }
+
+    //Set style
+    public void setStyle(CStyle style){this.style = style; }
 
     // a source raw text (a text) from the excel cell
     private String rawText;
@@ -419,7 +423,7 @@ public final class CCell extends COwned implements Cloneable
         if ( getOwner() != cell.getOwner() )
             throw new IllegalArgumentException();
 
-        if ( getOwner().containsCell(cell) )
+        if (! getOwner().containsCell(cell) )
             throw new IllegalArgumentException();
 
         if ( ! canMerge( cell ) )
@@ -519,4 +523,5 @@ public final class CCell extends COwned implements Cloneable
     {
         return String.format("L%dT%dR%dB%d", getCl(), getRt(), getCr(), getRb());
     }
+
 }

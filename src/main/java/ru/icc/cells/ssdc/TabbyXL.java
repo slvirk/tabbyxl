@@ -17,7 +17,6 @@
 package ru.icc.cells.ssdc;
 
 import java.io.*;
-import java.net.URL;
 import java.nio.file.*;
 import java.util.*;
 import java.util.regex.*;
@@ -37,8 +36,8 @@ import org.kie.internal.builder.KnowledgeBuilderFactory;
 import org.kie.internal.definition.KnowledgePackage;
 import org.kie.internal.io.ResourceFactory;
 import org.kie.internal.runtime.StatefulKnowledgeSession;
+import ru.icc.cells.identHead.GetHead;
 import ru.icc.cells.ssdc.model.*;
-import ru.icc.cells.ssdc.writers.*;
 
 public final class TabbyXL {
     // Params
@@ -234,7 +233,7 @@ public final class TabbyXL {
                 sb.append(indent).append("Sheets in processing: ALL\n");
             }
 
-            sb.append(indent).append(String.format("DRL file: \"%s\"%n", drlFile.getCanonicalPath()));
+            /*sb.append(indent).append(String.format("DRL file: \"%s\"%n", drlFile.getCanonicalPath()));
             if (null != catDirectory)
                 sb.append(indent).append(String.format("Category directory: \"%s\"%n", catDirectory.toRealPath()));
 
@@ -243,6 +242,7 @@ public final class TabbyXL {
             sb.append(indent).append(String.format("Using short names: \"%s\"%n", useShortNames));
             sb.append(indent).append(String.format("Output directory: \"%s\"%n", outputDirectory.toRealPath()));
             sb.append(indent).append(String.format("Debugging mode: %b", debuggingMode));
+            */
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -282,7 +282,7 @@ public final class TabbyXL {
                 .hasArg()
                 .withDescription("sheet indexes in the input excel workbook (e.g. \"0-2,4,5,7-10\")")
                 .create("sheets");
-
+        /*
         Option drlFileOpt = OptionBuilder
                 .withArgName("ruleset path")
                 .hasArg()
@@ -329,19 +329,19 @@ public final class TabbyXL {
         Option helpOpt = OptionBuilder
                 .withDescription("print this message")
                 .create("help");
-
+        */
         Options options = new Options();
 
         options.addOption(inputExcelFileOpt);
         options.addOption(sheetIndexesOpt);
-        options.addOption(drlFileOpt);
-        options.addOption(catDirectoryOpt);
-        options.addOption(ignoreSuperscriptOpt);
-        options.addOption(useCellValueOpt);
-        options.addOption(outputDirectoryOpt);
-        options.addOption(useShortNamesOpt);
-        options.addOption(debuggingModeOpt);
-        options.addOption(helpOpt);
+        //options.addOption(drlFileOpt);
+        //options.addOption(catDirectoryOpt);
+        //options.addOption(ignoreSuperscriptOpt);
+        //options.addOption(useCellValueOpt);
+        //options.addOption(outputDirectoryOpt);
+        //options.addOption(useShortNamesOpt);
+        //options.addOption(debuggingModeOpt);
+        //options.addOption(helpOpt);
 
         CommandLineParser parser = new BasicParser();
 
@@ -359,6 +359,7 @@ public final class TabbyXL {
             String sheetIndexesParam = cmd.getOptionValue(sheetIndexesOpt.getOpt());
             sheetIndexes = parseSheetIndexesParam(sheetIndexesParam);
 
+            /*
             String drlFileParam = cmd.getOptionValue(drlFileOpt.getOpt());
             drlFile = parseDrlFileParam(drlFileParam);
 
@@ -379,6 +380,7 @@ public final class TabbyXL {
 
             String debuggingModeParam = cmd.getOptionValue(debuggingModeOpt.getOpt());
             debuggingMode = parseDebuggingModeParam(debuggingModeParam);
+            */
         } catch (ParseException e) {
             e.printStackTrace();
             System.exit(0);
@@ -435,16 +437,26 @@ public final class TabbyXL {
         main(args);
     }
 
-    public static void main(String[] args) {
-        System.out.printf("Start timestamp: %s%n%n", new Timestamp(new Date().getTime()));
+    private static boolean dontProcess(String sn, String[] items){
+        for (String s: items){
+            if (sn.equals(s))
+                return true;
+        }
+        return false;
+    }
 
+    public static void main(String[] args) {
+
+        System.out.printf("Start timestamp: %s%n%n", new Timestamp(new Date().getTime()));
+        GetHead head = null;
+        String[] itm = {"0127", "0146", "0148"};
         try {
             parseCommandLineParams(args);
             System.out.printf("%s%n%n", traceParsedParams());
 
             loadWorkbook();
-            loadRules();
-            loadCatFiles();
+            //loadRules();
+            //loadCatFiles();
             DATA_LOADER.setWithoutSuperscript(ignoreSuperscript);
             DATA_LOADER.setUseCellValue(useCellValue);
 
@@ -453,15 +465,23 @@ public final class TabbyXL {
             // Processing sheets from the input Excel workbook
             for (int sheetNo : sheetIndexes) {
                 DATA_LOADER.goToSheet(sheetNo);
-                String sheetName = DATA_LOADER.getCurrentSheetName();
 
+                String sheetName = DATA_LOADER.getCurrentSheetName();
+                /*
+                if (dontProcess(sheetName, itm))
+                    continue;
+                 */
                 int tableNo = 0;
                 while (true) {
                     CTable table = DATA_LOADER.nextTable();
-                    if (null == table) break;
 
+                    if (null == table) break;
+                    head = new GetHead(table, DATA_LOADER.getCellShift(), DATA_LOADER.getWorkbook(), sheetName);
+                    head.analyzeHead();
+                    head.saveWorksheet(String.format("E:\\devel\\cells\\identHead\\testData\\test%s.xlsx", sheetName));
                     count++;
 
+                    /*
                     System.out.printf("#%d Processing sheet: %d [%s] | table %d%n%n", count, sheetNo, sheetName, tableNo);
                     Tables.recoverCellBorders(table);
 
@@ -496,15 +516,18 @@ public final class TabbyXL {
                     writer.write(table);
 
                     tableNo++;
+                    */
                 }
             }
+            if (head != null)
+                head.saveWorkbook("E:\\devel\\cells\\identHead\\testData\\test.xlsx");
             // Checking and creating output data directory
-            if (Files.notExists(outputDirectory)) Files.createDirectory(outputDirectory);
+            //if (Files.notExists(outputDirectory)) Files.createDirectory(outputDirectory);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            System.out.println(statisticsManager.trace());
-            System.out.printf("Total rule firing time: %s%n%n", totalRuleFiringTime);
+            //System.out.println(statisticsManager.trace());
+            //System.out.printf("Total rule firing time: %s%n%n", totalRuleFiringTime);
             System.out.printf("End timestamp: %s%n", new Timestamp(new Date().getTime()));
             CATEGORY_TEMPLATE_MANAGER.release();
         }

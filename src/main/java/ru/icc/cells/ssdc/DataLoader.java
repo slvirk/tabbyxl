@@ -32,6 +32,7 @@ public final class DataLoader {
     private String sheetName;
     private int rowIndex;
     private int cellCount;
+    private CPoint cellShift = null;
 
     private static final String REF_POINT_VAL = "$START";
     private static final String END_POINT_VAL = "$END";
@@ -93,6 +94,7 @@ public final class DataLoader {
 
         CPoint refPnt = findRefPoint(sheet, rowIndex);
         if (null == refPnt) return null;
+        cellShift = refPnt;
 
         CPoint endPnt = findEndPoint(sheet, refPnt.r);
         if (null == endPnt) return null;
@@ -472,7 +474,7 @@ public final class DataLoader {
 
         CellStyle excelCellStyle = excelCell.getCellStyle();
         CStyle cellStyle = cell.getStyle();
-        System.out.printf("cell = %s%n", cell.getText());
+        //System.out.printf("cell = %s%n", cell.getText());
         fillCellStyle(cellStyle, excelCellStyle);
 
         String reference = new CellReference(excelCell).formatAsString();
@@ -657,7 +659,7 @@ public final class DataLoader {
 
     private static final DataLoader INSTANCE = new DataLoader();
 
-    private DataLoader() {
+    public DataLoader() {
     }
 
     public static DataLoader getInstance() {
@@ -672,5 +674,14 @@ public final class DataLoader {
             this.c = c;
             this.r = r;
         }
+    }
+
+    public  int[] getCellShift(){
+        int[] shift = {cellShift.c, cellShift.r};
+        return shift;
+    }
+
+    public Workbook getWorkbook() {
+        return workbook;
     }
 }
