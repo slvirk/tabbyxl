@@ -57,11 +57,35 @@ public class Block {
 
     public boolean getIsLabel(){return isLabel; }
 
-    public void incSizeH(CCell cCell){
+    public void increaseBlockSize(CCell cCell){
         if (cCell == null) return;
         if (cCell.getRb() > bottom) bottom = cCell.getRb();
         if (cCell.getCr() > right) right = cCell.getCr() +1;
 
+    }
+
+    public boolean concatBlock(Block block){
+        if ((top == block.top) || (bottom == block.bottom)){
+            //Horisintal block concatination
+            if (((left <=block.left) && (right+1 >= block.left)) || (left >= block.left) && (left <= block.right+1)){
+                if (left > block.left)
+                    left = block.left;
+                if (right< block.right)
+                    right = block.right;
+                return true;
+            }
+            if ((left == block.left) || (right == block.right)){
+                //Vertical concatination
+                if(((block.top <= top) && (block.bottom+1 >= top)) || ((block.top<=bottom) && (block.bottom+1>=bottom))){
+                    if (top > block.top)
+                        top = block.top;
+                    if (bottom < block.bottom)
+                        bottom = block.bottom;
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
 }
