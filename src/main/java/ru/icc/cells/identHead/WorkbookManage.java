@@ -53,7 +53,7 @@ public final class WorkbookManage {
                         row = sheet.getRow(reg.getFirstRow());
                         cell = row.getCell(reg.getFirstColumn());
                         if (! cell.getStringCellValue().equals(""))
-                            val = (val.isEmpty()) ?  cell.getStringCellValue() : val + " \n" + cell.getStringCellValue();
+                            val = (val.isEmpty()) ?  cell.getStringCellValue() : val + " " + cell.getStringCellValue();
                         //cellStyle = cell.getCellStyle();
                         sheet.removeMergedRegion(r);
                     }
@@ -66,10 +66,10 @@ public final class WorkbookManage {
                     for (int c = startCol; c <= endCol; c ++){
                         row = sheet.getRow(r);
                         cell = row.getCell(c);
-
+                        cell.setCellType(CELL_TYPE_STRING); //!!!! Convert type to String
                         if ((! cell.getStringCellValue().equals("")) && (!cell.getStringCellValue().trim().equals(val))) {
-                            cell.setCellType(CELL_TYPE_STRING);
-                            val = (val.isEmpty()) ? cell.getStringCellValue().trim() : val + " \n" + cell.getStringCellValue().trim();
+
+                            val = (val.isEmpty()) ? cell.getStringCellValue().trim() : val + " " + cell.getStringCellValue().trim();
                             //cellStyle = cell.getCellStyle();
                         }
                     }
@@ -116,10 +116,11 @@ public final class WorkbookManage {
     public void saveWorkbook(String pathToSave) throws IOException {
         if (pathToSave == null) pathToSave = this.pathToSave;
 
-        FileOutputStream out = new FileOutputStream(new File(pathToSave));
-        workbook.write(out);
-        System.out.println("test.xlsx written successfully on disk.");
-        out.close();
+        try (FileOutputStream out = new FileOutputStream(new File(pathToSave))) {
+            workbook.write(out);
+            System.out.println("test.xlsx written successfully on disk.");
+            out.close();
+        }
 
 
     }
